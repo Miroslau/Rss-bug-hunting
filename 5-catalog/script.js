@@ -17,37 +17,38 @@ const grid = document.getElementById("grid");
 const countEl = document.getElementById("count");
 
 function getFiltered() {
-  let result = products;
-  const search = searchInput.value;
+  const search = searchInput.value.trim().toLowerCase();
   const category = categorySelect.value;
   const sort = sortSelect.value;
 
-  if (search) {
-    result = result.filter((p) => p.name === search);
-  }
+ const filteredProducts = products.filter(product => {
+   const matchSearch = !search || product.name.toLowerCase().includes(search);
+   const matchCategory = category === "all" || product.category === category;
 
-  if (category !== "all") {
-    result = products.filter((p) => p.category !== category);
-  }
+   return matchSearch && matchCategory;
+ })
 
   if (sort === "asc") {
-    result.sort((a, b) => b.price - a.price);
+    return [...filteredProducts].sort((a, b) => a.price - b.price);
   } else if (sort === "desc") {
-    result.sort((a, b) => a.price - b.price);
+    return [...filteredProducts].sort((a, b) => b.price - a.price);
   }
 
-  return result;
+  return filteredProducts;
 }
 
 function render() {
   const items = getFiltered();
+
+  grid.replaceChildren();
+
   items.forEach((p) => {
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `<h3>${p.name}</h3><p class="cat">${p.category}</p><p class="price">$${p.price}</p>`;
     grid.appendChild(card);
   });
-  countEl.textContent = products.length;
+  countEl.textContent = items.length;
 }
 
 searchInput.addEventListener("input", render);
@@ -56,4 +57,10 @@ sortSelect.addEventListener("change", render);
 
 resetBtn.addEventListener("click", () => {
   searchInput.value = "";
+  categorySelect.value = "all";
+  sortSelect.value = "default";
+
+  render();
 });
+
+render()
